@@ -1,6 +1,7 @@
 """
 足球赛前情报爬虫 - 核心脚本
-支持从 CSV 读取比赛列表，并行抓取 Sportsmole / 风驰直播 / Transfermarkt / El Futbolero 数据
+支持从 CSV 读取比赛列表，并行抓取 Sofascore / El Futbolero / Sportsmole / 风驰直播 / Transfermarkt 数据
+WhoScored 保留为概念性信息源，待后续集成
 """
 
 import csv
@@ -8,6 +9,7 @@ import time
 import random
 import json
 import re
+import subprocess
 import logging
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
@@ -42,6 +44,7 @@ class MatchInfo:
 @dataclass
 class PreviewData:
     match: MatchInfo = field(default_factory=MatchInfo)
+    sofa_data: dict = field(default_factory=dict)
     sportsmole_url: str = ""
     sportsmole_content: str = ""
     fczhibo_url: str = ""
@@ -302,19 +305,168 @@ def extract_elfutbolero_sections(parsed: dict) -> dict:
     return sections
 
 
-def search_sportsmole_url(team_a: str, team_b: str, session: requests.Session) -> Optional[str]:
-    query = f"site:sportsmole.co.uk \"{team_a}\" \"{team_b}\" preview"
-    search_url = f"https://www.google.com/search?q={query.replace(' ', '+')}"
-    html = fetch_page(search_url, session)
-    if not html:
+SOFA_API_SCRIPT = Path(__file__).parent / "sofa_api.js"
+
+TOURNAMENT_MAP = {
+    "saudi pro league": 955,
+    "premier league": 17,
+    "la liga": 8,
+    "bundesliga": 35,
+    "2. bundesliga": 44,
+    "serie a": 23,
+    "ligue 1": 34,
+    "champions league": 7,
+    "europa league": 679,
+    "a-league": 136,
+    "a-league men": 136,
+    "k league 1": 410,
+    "k league": 410,
+    "j1 league": 292,
+    "j.league": 292,
+    "mls": 242,
+    "eliteserien": 20,
+    "norwegian": 20,
+    "world cup": 16,
+    "club world cup": 631,
+    "european championship": 1,
+    "euro": 1,
+    "nations league": 10783,
+    "uefa nations league": 10783,
+    "chinese super league": 378,
+    "super liga": 378,
+}
+
+
+def _run_sofa_api(*args) -> Optional[dict]:
+    if not SOFA_API_SCRIPT.exists():
+        logger.error(f"Sofascore API script not found: {SOFA_API_SCRIPT}")
         return None
-    soup = BeautifulSoup(html, "html.parser")
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if "sportsmole.co.uk" in href and "preview" in href:
-            if "/url?q=" in href:
-                href = href.split("/url?q=")[1].split("&")[0]
-            return href
+    try:
+        result = subprocess.run(
+            ["node", str(SOFA_API_SCRIPT)] + list(args),
+            capture_output=True, text=True, timeout=300,
+        )
+        if result.returncode != 0:
+            logger.error(f"sofa_api.js error: {result.stderr[:200]}")
+            return None
+        return json.loads(result.stdout.strip())
+    except subprocess.TimeoutExpired:
+        logger.error("sofa_api.js timed out")
+    except json.JSONDecodeError as e:
+        logger.error(f"sofa_api.js JSON parse error: {e}")
+    except Exception as e:
+        logger.error(f"sofa_api.js unknown error: {e}")
+    return None
+
+
+def _find_tournament_id(competition: str) -> Optional[int]:
+    lower = competition.lower().strip()
+    for name, tid in TOURNAMENT_MAP.items():
+        if name in lower or lower in name:
+            return tid
+    return None
+
+
+def fetch_sofascore_preview(home_team: str, away_team: str, competition: str) -> dict:
+    result = {"standings": [], "match": None, "details": {}, "pregame_form": {}, "h2h": {}, "referee": {}, "team_stats": {}}
+
+    tournament_id = _find_tournament_id(competition)
+    if not tournament_id:
+        search = _run_sofa_api("search", competition, "uniqueTournament")
+        if search and len(search) > 0:
+            tournament_id = search[0].get("id")
+    if not tournament_id:
+        logger.warning(f"Sofascore: tournament not found for '{competition}'")
+        return result
+
+    season = _run_sofa_api("seasons", str(tournament_id))
+    if not season or not season.get("id"):
+        logger.warning(f"Sofascore: season not found for tournament {tournament_id}")
+        return result
+    season_id = season["id"]
+
+    full = _run_sofa_api("full-preview", str(tournament_id), str(season_id), home_team, away_team)
+    if full:
+        result = full
+
+    return result
+
+
+SPORTSMOLE_TEAM_SLUG_MAP = {
+    "al-nassr": "al-nassr", "al-hilal": "al-hilal", "al-ahli": "al-ahli",
+    "al-orobah": "al-orobah", "al-ettifaq": "al-ettifaq", "al-itthad": "al-itthad",
+    "barcelona": "barcelona", "real madrid": "real-madrid", "sevilla": "sevilla",
+    "atletico madrid": "atletico-madrid",
+    "bayern munich": "bayern-munich", "bayern": "bayern-munich",
+    "dortmund": "dortmund", "borussia dortmund": "dortmund",
+    "stuttgart": "stuttgart", "leverkusen": "leverkusen",
+    "union berlin": "union-berlin", "hoffenheim": "hoffenheim",
+    "werder bremen": "werder-bremen", "bremen": "werder-bremen",
+    "frankfurt": "frankfurt", "wolfsburg": "wolfsburg",
+    "st pauli": "st-pauli", "st. pauli": "st-pauli",
+    "leipzig": "leipzig", "rb leipzig": "leipzig",
+    "mainz": "mainz", "koln": "koln", "cologne": "koln",
+    "bochum": "bochum", "augsburg": "augsburg",
+    "monchengladbach": "monchengladbach", "gladbach": "monchengladbach",
+    "inter miami": "inter-miami", "los angeles fc": "los-angeles-fc",
+    "real salt lake": "real-salt-lake", "vancouver whitecaps": "vancouver-whitecaps",
+    "fc dallas": "fc-dallas", "dallas": "fc-dallas",
+    "adelaide united": "adelaide-united", "western sydney": "western-sydney-wanderers",
+    "brisbane roar": "brisbane-roar", "central coast": "central-coast-mariners",
+    "melbourne city": "melbourne-city", "western united": "western-united",
+    "macarthur": "macarthur-fc", "sydney fc": "sydney-fc",
+    "wellington phoenix": "wellington-phoenix",
+    "melbourne victory": "melbourne-victory", "auckland": "auckland-fc",
+    "ulsan": "ulsan", "daegu": "daegu",
+    "molde": "molde", "valerenga": "valerenga",
+    "scotland": "scotland", "portugal": "portugal",
+    "belgium": "belgium", "morocco": "morocco",
+    "psg": "paris-saint-germain", "paris saint-germain": "paris-saint-germain",
+    "newcastle": "newcastle-united", "newcastle united": "newcastle-united",
+    "liverpool": "liverpool", "arsenal": "arsenal", "manchester city": "manchester-city",
+    "manchester united": "manchester-united", "man utd": "manchester-united",
+    "chelsea": "chelsea", "tottenham": "tottenham",
+}
+
+
+def _to_sportsmole_slug(team_name: str) -> str:
+    lower = team_name.lower().strip()
+    if lower in SPORTSMOLE_TEAM_SLUG_MAP:
+        return SPORTSMOLE_TEAM_SLUG_MAP[lower]
+    return lower.replace(" ", "-").replace(".", "").replace("'", "")
+
+
+def search_sportsmole_url(team_a: str, team_b: str, session: requests.Session) -> Optional[str]:
+    slug_a = _to_sportsmole_slug(team_a)
+    slug_b = _to_sportsmole_slug(team_b)
+    exact = []
+    partial = []
+    for slug in [slug_a, slug_b]:
+        team_page_url = f"https://www.sportsmole.co.uk/football/{slug}/"
+        html = fetch_page(team_page_url, session)
+        if not html:
+            continue
+        soup = BeautifulSoup(html, "html.parser")
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if "preview" not in href.lower() and "prediction" not in href.lower():
+                continue
+            other_slug = slug_b if slug == slug_a else slug_a
+            full_url = href if href.startswith("http") else f"https://www.sportsmole.co.uk{href}"
+            url_slug = full_url.split("/preview/")[-1].split("_")[0].lower() if "/preview/" in full_url else ""
+            url_has_other = other_slug in url_slug or other_slug.replace("-", " ") in url_slug.replace("-", " ")
+            link_text = a.get_text(strip=True).lower()
+            other_name_parts = team_b.lower().split() if slug == slug_a else team_a.lower().split()
+            text_match = sum(1 for part in other_name_parts if part in link_text)
+            if url_has_other and text_match >= len(other_name_parts) - 1:
+                exact.append(full_url)
+            elif url_has_other or text_match >= max(1, len(other_name_parts) - 1):
+                partial.append((int(url_has_other) * 10 + text_match, full_url))
+    if exact:
+        return exact[0]
+    if partial:
+        partial.sort(key=lambda x: -x[0])
+        return partial[0][1]
     return None
 
 
@@ -380,6 +532,12 @@ def process_match(match: MatchInfo, session: requests.Session) -> PreviewData:
     data = PreviewData(match=match)
     logger.info(f"Processing: {match.home_team} vs {match.away_team}")
 
+    sofa = fetch_sofascore_preview(match.home_team, match.away_team, match.competition)
+    if sofa and sofa.get("match"):
+        data.sofa_data = sofa
+    else:
+        data.errors.append("Sofascore: match not found or API unavailable")
+
     ef_url = search_elfutbolero_url(match.home_team, match.away_team, session)
     if ef_url:
         data.elfutbolero_url = ef_url
@@ -440,10 +598,19 @@ def read_csv(csv_path: str) -> list[MatchInfo]:
 def save_results(results: list[PreviewData], output_path: str):
     output = []
     for r in results:
+        sofa = r.sofa_data
         output.append({
             "home_team": r.match.home_team,
             "away_team": r.match.away_team,
             "match_time": r.match.match_time,
+            "competition": r.match.competition,
+            "sofascore_standings": sofa.get("standings", [])[:5] if sofa else [],
+            "sofascore_match": sofa.get("match") if sofa else None,
+            "sofascore_referee": sofa.get("referee") if sofa else None,
+            "sofascore_pregame_form": sofa.get("pregame_form") if sofa else None,
+            "sofascore_h2h": sofa.get("h2h") if sofa else None,
+            "sofascore_team_stats_home": sofa.get("team_stats", {}).get("home") if sofa else None,
+            "sofascore_team_stats_away": sofa.get("team_stats", {}).get("away") if sofa else None,
             "elfutbolero_url": r.elfutbolero_url,
             "elfutbolero_preview": r.elfutbolero_content[:500] if r.elfutbolero_content else "",
             "sportsmole_url": r.sportsmole_url,

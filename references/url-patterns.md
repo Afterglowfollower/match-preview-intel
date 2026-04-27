@@ -7,17 +7,24 @@
 ### Preview 文章 URL 规律
 
 ```
-https://www.sportsmole.co.uk/football/{team-slug}/preview-{team-a}-vs-{team-b}-prediction-team-news-lineups_{article_id}.html
+https://www.sportsmole.co.uk/football/{team-slug}/preview/{team-a}-vs-{team-b}-prediction-team-news-lineups_{article_id}.html
 ```
 
-- `{team-slug}`: 球队在 Sportsmole 上的 URL slug（如 `bayern-munich`、`werder-bremen`）
+- `{team-slug}`: 球队在 Sportsmole 上的 URL slug（如 `bayern-munich`、`al-nassr`）
 - `{article_id}`: 文章数字 ID（6 位数字）
 
-### 搜索策略
+### 获取策略（优先级）
 
-1. **直接构造**：根据 team-slug 尝试构造 URL，成功率约 70%
-2. **搜索引擎定位**：`site:sportsmole.co.uk "{team_a}" "{team_b}" preview`
-3. **球队专栏浏览**：`https://www.sportsmole.co.uk/football/{team-slug}/` 列出最近文章
+1. **球队页面提取（推荐，已验证）**：访问 `https://www.sportsmole.co.uk/football/{team-slug}/`，从页面中提取包含对手名的 Preview 链接
+   - 优点：纯 HTTP 可获取，无需搜索引擎，覆盖沙特联/MLS/澳超等冷门联赛
+   - 流程：球队页面 → 匹配 `href` 含 `preview` + `prediction` + 对手 slug 的链接 → 拼接完整 URL
+2. **站内搜索（备选）**：`https://www.sportsmole.co.uk/search/?q={team_a}+{team_b}+preview`
+   - 缺点：搜索结果不够精确，返回旧文章
+3. **Preview 列表页（备选）**：`https://www.sportsmole.co.uk/football/preview/`
+
+### ❌ 不可用方案
+
+- ~~Google 搜索 `site:sportsmole.co.uk`~~：被限流 429，无法使用
 
 ### DOM 提取选择器
 
@@ -28,29 +35,49 @@ https://www.sportsmole.co.uk/football/{team-slug}/preview-{team-a}-vs-{team-b}-p
 | Possible Lineups | 搜索含 "Possible Lineups" 标题后的内容 |
 | H2H 记录 | 搜索含 "Head-to-Head" 标题后的段落 |
 | Prediction | 搜索含 "Prediction" 标题后的段落 |
+| 球队页面 Preview 链接 | `a[href*="preview"][href*="prediction"]` |
 
-### 常见 team-slug 映射
+### team-slug 映射（已验证）
 
-| 球队 | slug |
-| :--- | :--- |
-| 拜仁慕尼黑 | `bayern-munich` |
-| 多特蒙德 | `borussia-dortmund` |
-| 巴塞罗那 | `barcelona` |
-| 皇家马德里 | `real-madrid` |
-| 云达不莱梅 | `werder-bremen` |
-| 斯图加特 | `stuttgart` |
-| 柏林联合 | `union-berlin` |
-| 霍芬海姆 | `hoffenheim` |
-| 法兰克福 | `eintracht-frankfurt` |
-| 门兴 | `borussia-monchengladbach` |
-| 圣保利 | `st-pauli` |
-| 科隆 | `koln` |
-| 奥格斯堡 | `fc-augsburg` |
-| 波鸿 | `bochum` |
-| 美因茨 | `mainz` |
-| RB莱比锡 | `rb-leipzig` |
-| 塞维利亚 | `sevilla` |
-| 利雅得胜利 | `al-nassr` |
+| 球队 | slug | 联赛 |
+| :--- | :--- | :--- |
+| 拜仁慕尼黑 | `bayern-munich` | 德甲 |
+| 多特蒙德 | `dortmund` | 德甲 |
+| 巴塞罗那 | `barcelona` | 西甲 |
+| 皇家马德里 | `real-madrid` | 西甲 |
+| 塞维利亚 | `sevilla` | 西甲 |
+| 云达不莱梅 | `werder-bremen` | 德甲 |
+| 斯图加特 | `stuttgart` | 德甲 |
+| 柏林联合 | `union-berlin` | 德甲 |
+| 霍芬海姆 | `hoffenheim` | 德甲 |
+| 法兰克福 | `frankfurt` | 德甲 |
+| 门兴 | `monchengladbach` | 德甲 |
+| 圣保利 | `st-pauli` | 德甲 |
+| 科隆 | `koln` | 德乙 |
+| 美因茨 | `mainz` | 德甲/德乙 |
+| RB莱比锡 | `leipzig` | 德甲 |
+| 利雅得胜利 | `al-nassr` | 沙特联 |
+| 利雅得新月 | `al-hilal` | 沙特联 |
+| 欧鲁巴赫 | `al-orobah` | 沙特联 |
+| Inter Miami | `inter-miami` | MLS |
+| Real Salt Lake | `real-salt-lake` | MLS |
+| Vancouver | `vancouver-whitecaps` | MLS |
+| FC Dallas | `fc-dallas` | MLS |
+| Adelaide United | `adelaide-united` | 澳超 |
+| Brisbane Roar | `brisbane-roar` | 澳超 |
+| Central Coast | `central-coast-mariners` | 澳超 |
+| Melbourne City | `melbourne-city` | 澳超 |
+| Western Sydney | `western-sydney-wanderers` | 澳超 |
+| Sydney FC | `sydney-fc` | 澳超 |
+| Wellington Phoenix | `wellington-phoenix` | 澳超 |
+| Melbourne Victory | `melbourne-victory` | 澳超 |
+| Molde | `molde` | 挪威超 |
+| Scotland | `scotland` | 国家队 |
+| Portugal | `portugal` | 国家队 |
+| Belgium | `belgium` | 国家队 |
+| Morocco | `morocco` | 国家队 |
+| PSG | `paris-saint-germain` | 法甲 |
+| Newcastle | `newcastle-united` | 英超 |
 
 ## 二、WhoScored
 
@@ -247,7 +274,81 @@ https://www.elfutbolero.us/news/{slug}-{YYYYMMDD}-{id}.html
 2. **DOM 提取（补充）**：从 `article div.prose` 获取结构化内容，可区分章节（`div.article-header`）和列表（`ul.article-list`）
 3. **混合策略**：JSON-LD 获取全文 → DOM 提取阵容列表和章节标题 → 合并输出
 
-## 六、补充信息源
+## 六、Sofascore API (api.sofascore.com)
+
+### 技术特征
+
+- **无需浏览器**：纯 HTTP API，通过 Node.js `https` 模块直接请求
+- **TLS 指纹检测**：Sofascore API 有 TLS 指纹验证，Python `requests` 会被 403，需用 `curl_cffi`（模拟 Chrome TLS 指纹）或 Node.js 原生 `https`
+- **当前方案**：通过 `scripts/sofa_api.js`（Node.js）调用，Python 通过 `subprocess` 调用
+- **限速**：建议 600ms 间隔（脚本已内置）
+- **联赛覆盖**：全球 500+ 联赛，沙特联/MLS/澳超/K联赛/J联赛/中超全覆盖
+
+### 核心 API 端点
+
+| 端点 | URL Pattern | 说明 |
+|:---|:---|:---|
+| 搜索 | `/api/v1/search/{query}` | 搜索球队/球员/联赛/裁判 |
+| 联赛赛季 | `/api/v1/unique-tournament/{tid}/seasons` | 获取联赛所有赛季 |
+| 积分榜 | `/api/v1/unique-tournament/{tid}/season/{sid}/standings/total` | 结构化积分表 |
+| 轮次赛程 | `/api/v1/unique-tournament/{tid}/season/{sid}/events/round/{round}` | 指定轮次所有比赛 |
+| 比赛详情 | `/api/v1/event/{game_id}` | 裁判/场馆/比分 |
+| 赛前状态 | `/api/v1/event/{game_id}/pregame-form` | 近5场/排名/评分/身价 |
+| 历史交锋 | `/api/v1/event/{game_id}/h2h` | H2H 胜负记录 |
+| 裁判统计 | `/api/v1/referee/{referee_id}` | 执法场次/出牌率 |
+| 球队统计 | `/api/v1/team/{team_id}/unique-tournament/{tid}/season/{sid}/statistics/overall` | 115+ 指标 |
+| 比赛事件 | `/api/v1/event/{game_id}/incidents` | 进球/黄牌/红牌/VAR |
+
+### 联赛 ID 映射
+
+| 联赛 | tournament_id |
+|:---|:---|
+| 沙特联 | 955 |
+| 英超 | 17 |
+| 西甲 | 8 |
+| 德甲 | 35 |
+| 德乙 | 44 |
+| 意甲 | 23 |
+| 法甲 | 34 |
+| 欧冠 | 7 |
+| 欧联 | 679 |
+| MLS | 242 |
+| 澳超 (A-League Men) | 136 |
+| K联赛 (K League 1) | 410 |
+| J联赛 | 292 |
+| 挪威超 (Eliteserien) | 20 |
+| 世界杯 | 16 |
+| 世俱杯 | 631 |
+| 欧洲杯 | 1 |
+| 欧国联 | 10783 |
+| 中超 | 378 |
+
+### 调用方式
+
+```bash
+# 通过 Node.js 脚本
+node scripts/sofa_api.js full-preview 955 63998 "Al-Nassr" "Al-Hilal"
+
+# 单独命令
+node scripts/sofa_api.js search "Saudi Pro League"
+node scripts/sofa_api.js seasons 955
+node scripts/sofa_api.js standings 955 63998
+node scripts/sofa_api.js match-details 12624994
+node scripts/sofa_api.js pregame-form 12624994
+node scripts/sofa_api.js h2h 12624994
+node scripts/sofa_api.js referee-stats {referee_id}
+node scripts/sofa_api.js team-stats {team_id} 955 63998
+```
+
+### Python 集成
+
+```python
+from fetch_preview import fetch_sofascore_preview
+result = fetch_sofascore_preview("Al-Nassr", "Al-Hilal", "Saudi Pro League")
+# result = {standings, match, details, pregame_form, h2h, referee, team_stats}
+```
+
+## 七、补充信息源
 
 当四大核心源无法覆盖时，降级到以下补充源：
 

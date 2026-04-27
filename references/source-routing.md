@@ -4,46 +4,48 @@
 
 ## 一、联赛→信息源可用性矩阵
 
-| 联赛/赛事 | WhoScored | Sportsmole | 风驰直播 | Transfermarkt | El Futbolero |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 英超 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview |
-| 西甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview |
-| 德甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 |
-| 意甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 |
-| 法甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 |
-| 欧冠 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview |
-| 欧联 | ✅ 完整 | ✅ Preview | ⚠️ 部分 | ✅ 完整 | ⚠️ 部分 |
-| 欧国联 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 |
-| 沙特联 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview |
-| 美职联 (MLS) | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview |
-| 澳超 (A-League) | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 |
-| K联赛 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 新闻 |
-| J联赛 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 新闻 |
-| 中超 | ❌ | ❌ | ⚠️ 部分 | ⚠️ 部分 | ❌ |
-| 世界杯 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview |
-| 世俱杯 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview |
-| 洲际杯赛 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 |
+| 联赛/赛事 | WhoScored | Sportsmole | 风驰直播 | Transfermarkt | El Futbolero | Sofascore API |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 英超 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 西甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 德甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| 意甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| 法甲 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| 欧冠 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 欧联 | ✅ 完整 | ✅ Preview | ⚠️ 部分 | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| 欧国联 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| 沙特联 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 美职联 (MLS) | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 澳超 (A-League) | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
+| K联赛 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 新闻 | ✅ 完整 |
+| J联赛 | ❌ | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 新闻 | ✅ 完整 |
+| 中超 | ❌ | ❌ | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 |
+| 世界杯 | ✅ 完整 | ✅ Preview | ✅ 彩经 | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 世俱杯 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ✅ Preview | ✅ 完整 |
+| 洲际杯赛 | ⚠️ 部分 | ⚠️ 部分 | ❌ | ✅ 完整 | ⚠️ 部分 | ✅ 完整 |
 
 图例：✅ 完整覆盖 | ⚠️ 部分覆盖 | ❌ 无覆盖
 
 ## 二、二级子类→信息源优先级路由
 
 ### 1.2 积分形势
-1. 风驰直播（直播前瞻段落，含积分、净胜球、射手榜）
-2. WhoScored（Standings 页面，结构化积分表）
-3. Transfermarkt（competitionTable API）
-4. El Futbolero（Preview 文章中含积分排名描述，尤其沙特联/MLS）
+1. Sofascore API（`standings_data` — 结构化积分表，全球500+联赛，0.5-2秒/请求）
+2. 风驰直播（直播前瞻段落，含积分、净胜球、射手榜）
+3. WhoScored（Standings 页面，结构化积分表）
+4. Transfermarkt（competitionTable API）
+5. El Futbolero（Preview 文章中含积分排名描述，尤其沙特联/MLS）
 
 ### 1.3 后续赛程与晋级/降级压力
-1. 风驰直播（前瞻文本中含后续赛程描述）
-2. Sportsmole（Preview 文章中提及赛程压力）
-3. El Futbolero（Preview 文章中含赛程压力描述）
-4. WhoScored（Fixtures 页面）
+1. Sofascore API（`upcoming_matches_data` + `standings_data` + `pregame_form_data` — 可推算出线条件）
+2. 风驰直播（前瞻文本中含后续赛程描述）
+3. Sportsmole（Preview 文章中提及赛程压力）
+4. El Futbolero（Preview 文章中含赛程压力描述）
+5. WhoScored（Fixtures 页面）
 
 ### 1.4 裁判组构成与执法画像
-1. Transfermarkt（refereeProfile API — 执法场次、出牌率）
-2. 风驰直播（部分比赛页面含裁判信息）
-3. WorldFootball.net（裁判执法记录，需 HTML 爬取）
+1. Sofascore API（`match_details_data` → referee_id + `referee_stats_data` — 出牌率/执法场次/场均黄牌）
+2. Transfermarkt（裁判档案页面）
+3. WhoScored（Referee 页面）
 
 ### 2.3 相关历史事件/经典战役
 1. Sportsmole（Preview 文章的 H2H 段落）
@@ -57,10 +59,11 @@
 3. Wikipedia / FIFA 官方（赛事纪录）
 
 ### 3.2 球队风格/打法特点
-1. WhoScored（Team Style — PPDA、控球率、阵型倾向、传球网络）
-2. Sportsmole（Preview 文章中的战术描述）
-3. El Futbolero（Preview 文章中的战术/阵型描述）
-4. 风驰直播（比赛统计中的进阶数据辅助判断）
+1. Sofascore API（`team_stats_data` — 115+ 指标：控球率、传球、逼抢、xG 等，全球500+联赛）
+2. WhoScored（Team Style — PPDA、控球率、阵型倾向、传球网络）
+3. Sportsmole（Preview 文章中的战术描述）
+4. El Futbolero（Preview 文章中的战术/阵型描述）
+5. 风驰直播（比赛统计中的进阶数据辅助判断）
 
 ### 3.3 主教练信息
 1. Transfermarkt（coachProfile API — 执教履历、胜率、惯用阵型）
@@ -91,9 +94,10 @@
 4. ESPN（Suspended 列表）
 
 ### 5.1 技术特点与战术角色
-1. WhoScored（Player Profiles — strengths/weaknesses 热力图、位置热区）
-2. FBref（Scout Report — 进阶数据指标如 xG、xA、压力成功率）
-3. Sportsmole（Preview 文章中的关键球员描述）
+1. Sofascore API（`league_player_stats_data` + `average_positions_data` — 球员平均站位+技术统计，可提炼"大幅前插"等判断）
+2. WhoScored（Player Profile — strengths/weaknesses 热力图）
+3. El Futbolero（Preview 文章中的球员技术描述）
+4. Sportsmole（Preview 文章中的球员特点描述）
 
 ### 5.4 大赛经验
 1. Transfermarkt（playerProfile API — 国家队出场数、进球数）
@@ -102,14 +106,15 @@
 4. Sportsmole（Preview 文章中的经验描述）
 
 ### 5.5 定位球战况
-1. WhoScored（定位球主罚倾向数据）
-2. FBref（点球记录、角球参与度）
-3. Sportsmole（Preview 文章中的定位球描述）
+1. Sofascore API（`shots_data` — 含 penalty/freeKick 类型 + `incidents_data` — 点球/任意球事件）
+2. WhoScored（定位球主罚倾向数据）
+3. FBref（点球记录、角球参与度）
+4. Sportsmole（Preview 文章中的定位球描述）
 
 ### 5.6 俱乐部赛季负荷与状态
-1. Transfermarkt（球员赛季出场记录、身价曲线）
-2. FBref（90分钟出场数、分钟分布）
-3. Understat（俱乐部 xG/xA 参与度）
+1. Sofascore API（`player_match_log_data` — 逐场出场记录，可聚合"近6周连续首发"）
+2. Transfermarkt（出场记录/身价曲线）
+3. FPL（minutes/form 字段）
 
 ### 6.1 场外背景与特殊身份
 1. El Futbolero（深度叙事文章 — 球员背景、转会故事、场外风波，尤其沙特联/MLS）
